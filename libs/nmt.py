@@ -130,6 +130,9 @@ def train(dim_word=100,  # word vector dimensionality
           unit_size=2,
           cond_unit_size=2,
 
+          group_num=2,
+          shuffle_group=False,
+
           given_imm=False,
           dump_imm=False,
           shuffle_data=False,

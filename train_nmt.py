@@ -102,6 +102,10 @@ def main():
                         help='Dropout rate, default is False (not use dropout)')
     parser.add_argument('--unit_size', action='store', default=2, type=int, dest='unit_size',
                         help='Number of unit size, default is %(default)s')
+    parser.add_argument('--group_num', action='store', default=2, type=int, dest='group_num',
+                        help='Number of group for group recurrent lstm/gru, default is %(default)s')
+    parser.add_argument('--shuffle_group', action='store_false', default=True, dest='shuffle_group',
+                        help='Whether shuffle across groups in group lstm')
     # TODO: rename this option to decoder_unit_size in future
     parser.add_argument('--cond_unit_size', action='store', default=2, type=int, dest='cond_unit_size',
                         help='Number of decoder unit size (will rename in future), default is %(default)s')
@@ -261,6 +265,9 @@ def main():
 
         unit_size=args.unit_size,
         cond_unit_size=args.cond_unit_size,
+        
+        group_num = args.group_num,
+        shuffle_group = args.shuffle_group,
 
         given_imm = not args.abandon_imm,
         dump_imm=True,

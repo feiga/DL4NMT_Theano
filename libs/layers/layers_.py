@@ -4,6 +4,7 @@
 from .basic import *
 from .gru import *
 from .lstm import *
+from .group_lstm import * #param_init_group_lstm, group_lstm_layer, param_init_group_lstm_cond, group_lstm_cond_layer
 
 __author__ = 'fyabc'
 
@@ -16,6 +17,8 @@ layers = {
     'multi_gru_cond': (param_init_gru_cond, gru_cond_layer),
     'lstm': (param_init_lstm, lstm_layer),
     'lstm_cond': (param_init_lstm_cond, lstm_cond_layer),
+    'group_lstm': (param_init_group_lstm, group_lstm_layer),
+    'group_lstm_cond': (param_init_group_lstm_cond, group_lstm_cond_layer),
     # todo: implement it
     'multi_lstm': (param_init_lstm, lstm_layer),
     'multi_lstm_cond': (param_init_lstm_cond, lstm_cond_layer),
