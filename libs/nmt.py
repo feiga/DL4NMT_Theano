@@ -350,9 +350,13 @@ Start Time = {}
         print 'Done'
         sys.stdout.flush()
 
-    valid_cost = validation(valid_iterator, f_cost, use_noise)
+    best_valid_cost = validation(valid_iterator, f_cost, use_noise)
     small_train_cost = validation(small_train_iterator, f_cost, use_noise)
-    message('Initial Valid cost {:.5f} Small train cost {:.5f}'.format(valid_cost, small_train_cost))
+    best_bleu = translate_dev_get_bleu(model, f_init, f_next, trng, use_noise)
+    if worker_id == 0:
+        message('Initial Valid cost {:.5f} Small train cost {:.5f} Valid BLEU {:.2f}'.format(best_valid_cost,
+                                                                                             small_train_cost,
+                                                                                             best_bleu))
 
     commu_time_sum = 0.0
     cp_time_sum =0.0
@@ -470,16 +474,19 @@ Start Time = {}
             if np.mod(uidx, validFreq) == 0:
                 valid_cost = validation(valid_iterator, f_cost, use_noise)
                 small_train_cost = validation(small_train_iterator, f_cost, use_noise)
+                valid_bleu = translate_dev_get_bleu(model, f_init, f_next, trng, use_noise)
                 if worker_id == 0:
-                    message('Valid cost {:.5f} Small train cost {:.5f}'.format(valid_cost, small_train_cost))
+                    message('Valid cost {:.5f} Small train cost {:.5f} Valid BLEU {:.2f}'.format(valid_cost,
+                                                                                                 small_train_cost,
+                                                                                                 valid_bleu))
                 sys.stdout.flush()
 
                 # Fine-tune based on dev cost
                 if fine_tune_patience > 0:
-                    if valid_cost < best_valid_cost:
+                    if valid_bleu > best_bleu:
                         bad_counter = 0
-                        best_valid_cost = valid_cost
-                        #dump the best model so far, including the immediate file
+                        best_bleu = valid_bleu
+                        # dump the best model so far, including the immediate file
                         if worker_id == 0:
                             message('Dump the the best model so far at uidx {}'.format(uidx))
                             model.save_model(saveto, history_errs)
@@ -499,10 +506,6 @@ Start Time = {}
                                 message('Discount clip value to {} at iteration {}'.format(clip_shared.get_value(), uidx))
                             finetune_cnt += 1
                             bad_counter = 0
-
-            if np.mod(uidx, dev_bleu_freq) == 0:
-                new_bleu = translate_dev_get_bleu(model, f_init, f_next, trng, use_noise)
-                message('Dev BLEU = {:.2f} at uidx {}'.format(new_bleu, uidx))
 
             # finish after this many updates
             if uidx >= finish_after:
