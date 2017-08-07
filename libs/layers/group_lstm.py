@@ -164,8 +164,8 @@ def group_lstm_layer(P, state_below, O, prefix='group_lstm', mask=None, **kwargs
     y_output = T.squeeze(T.reshape(y_output, [n_steps, n_samples, -1]))
     memory_output = T.squeeze(T.reshape(outputs[1], [n_steps, n_samples, -1]))
 
-    kw_ret['hidden_without_dropout'] = y_output #outputs[0]
-    kw_ret['memory_output'] = memory_output #outputs[1]
+    kw_ret['hidden_without_dropout'] = y_output  # outputs[0]
+    kw_ret['memory_output'] = memory_output  # outputs[1]
 
     outputs = [y_output, memory_output, kw_ret]
 
