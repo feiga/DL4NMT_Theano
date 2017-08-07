@@ -70,25 +70,24 @@ def group_lstm_layer(P, state_below, O, prefix='group_lstm', mask=None, **kwargs
 
     kw_ret = {}
 
-    n_steps = state_below.shape[0]
-    n_samples = state_below.shape[1] if state_below.ndim == 3 else 1
+    n_steps = state_below.shape[0] if state_below.ndim == 3 else 1
+    n_samples = state_below.shape[1] if state_below.ndim == 3 else state_below.shape[0]
     # dim = P[_p(prefix, 'U', layer_id)].shape[1] * group_num #// 4
 
     mask = T.alloc(1., n_steps, 1) if mask is None else mask
 
-    #x1 = P[_p(prefix, 'W', layer_id)].shape[0]
+    # x1 = P[_p(prefix, 'W', layer_id)].shape[0]
     x2 = P[_p(prefix, 'W', layer_id)].shape[1]
     h_per_group = P[_p(prefix, 'U', layer_id)].shape[1]
     h4_per_group = P[_p(prefix, 'U', layer_id)].shape[2]
     dim = h_per_group * group_num
-    #x3 = P[_p(prefix, 'W', layer_id)].shape[2]
+    # x3 = P[_p(prefix, 'W', layer_id)].shape[2]
 
     state_below = T.reshape(state_below, [n_steps, n_samples, group_num, x2])
     state_below = T.transpose(state_below, [2, 0, 1, 3])
     state_below = T.batched_dot(state_below, P[_p(prefix, 'W', layer_id)])
     # [n_steps, n_samples, group_num, 4*dim_per_group]
     state_below = T.transpose(state_below, [1, 2, 0, 3]) + P[_p(prefix, 'b', layer_id)]
-
 
     # prepare scan arguments
     init_states = [T.alloc(0., n_samples, group_num, h_per_group) 
@@ -259,6 +258,7 @@ def param_init_group_lstm_cond(O, params, prefix='lstm_cond', nin=None, dim=None
 
     return params
 
+
 def _lstm_step_kernel(preact, mask_, h_, c_, _dim):
     i = T.nnet.sigmoid(_slice(preact, 0, _dim))
     f = T.nnet.sigmoid(_slice(preact, 1, _dim))
@@ -339,11 +339,8 @@ def group_lstm_cond_layer(P, state_below, O, prefix='lstm', mask=None, context=N
         assert init_state, 'previous state must be provided'
 
     # Dimensions
-    n_steps = state_below.shape[0]
-    if state_below.ndim == 3:
-        n_samples = state_below.shape[1]
-    else:
-        n_samples = 1
+    n_steps = state_below.shape[0] if state_below.ndim == 3 else 1
+    n_samples = state_below.shape[1] if state_below.ndim == 3 else state_below.shape[0]
     if multi:
         dim = P[_p(prefix, 'Wc', layer_id)][0].shape[1] // 4
     else:
