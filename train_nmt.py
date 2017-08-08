@@ -35,6 +35,8 @@ def main():
                         help='Dim of word embedding, default is %(default)s')
     parser.add_argument('--maxlen', action='store', default=80, type=int, dest='maxlen',
                         help='Max sentence length, default is %(default)s')
+    parser.add_argument('--max_epochs', action='store', default=100, type=int, dest='max_epochs',
+                        help='Max training epochs, default is %(default)s')
     parser.add_argument('-S', action='store_false', default=True, dest='shuffle',
                         help='Shuffle data per epoch, default is True, set to False')
     parser.add_argument('--train1', action='store', metavar='filename', dest='train1', type=str,
@@ -216,7 +218,7 @@ def main():
     from libs.nmt import train
 
     train(
-        max_epochs= args.max_epochs,
+        max_epochs=args.max_epochs,
         saveto=args.model_file,
         preload=args.pre_load_file,
         reload_=args.reload,
@@ -266,8 +268,8 @@ def main():
         unit_size=args.unit_size,
         cond_unit_size=args.cond_unit_size,
         
-        group_num = args.group_num,
-        shuffle_group = args.shuffle_group,
+        group_num=args.group_num,
+        shuffle_group=args.shuffle_group,
 
         given_imm = not args.abandon_imm,
         dump_imm=True,
