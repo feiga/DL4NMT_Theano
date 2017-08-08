@@ -89,7 +89,7 @@ def group_lstm_layer(P, state_below, O, prefix='group_lstm', mask=None, **kwargs
     # [n_steps, n_samples, group_num, 4*dim_per_group]
     state_below = T.transpose(state_below, [1, 2, 0, 3]) + P[_p(prefix, 'b', layer_id)]
     if one_step:
-	state_below = T.reshape(state_below, [n_samples, group_num, -1])
+        state_below = T.reshape(state_below, [n_samples, group_num, -1])
 
     # prepare scan arguments
     init_states = [T.alloc(0., n_samples, group_num, h_per_group) 
@@ -160,24 +160,24 @@ def group_lstm_layer(P, state_below, O, prefix='group_lstm', mask=None, **kwargs
 
     y_output = outputs[0]
     if one_step:
-	y_output = T.reshape(y_output, [n_samples, -1])
+        y_output = T.reshape(y_output, [n_samples, -1])
     else:
-	y_output = T.reshape(y_output, [n_steps, n_samples, -1])
+        y_output = T.reshape(y_output, [n_steps, n_samples, -1])
     kw_ret['hidden_without_dropout'] = y_output  # outputs[0]
     
     if shuffle:
-	if one_step:
-	    tmp = T.reshape(outputs[0], [n_samples, group_num, -1])
-	    tmp = T.transpose(tmp, [0, 2, 1])
-	    y_output = T.reshape(tmp, [n_samples, -1])
-	else:
-	    tmp = T.reshape(outputs[0], [n_steps, n_samples, group_num, -1])
+        if one_step:
+            tmp = T.reshape(outputs[0], [n_samples, group_num, -1])
+            tmp = T.transpose(tmp, [0, 2, 1])
+            y_output = T.reshape(tmp, [n_samples, -1])
+        else:
+            tmp = T.reshape(outputs[0], [n_steps, n_samples, group_num, -1])
             tmp = T.transpose(tmp, [0, 1, 3, 2])
             y_output = T.reshape(tmp, [n_steps, n_samples, -1])
-    if one_step: 
-    	memory_output = T.reshape(outputs[1], [n_samples, -1])
+    if one_step:
+        memory_output = T.reshape(outputs[1], [n_samples, -1])
     else:
-	memory_output = T.reshape(outputs[1], [n_steps, n_samples, -1])
+        memory_output = T.reshape(outputs[1], [n_steps, n_samples, -1])
 
     kw_ret['memory_output'] = memory_output  # outputs[1]
 
