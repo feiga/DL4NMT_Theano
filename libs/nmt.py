@@ -142,12 +142,13 @@ def train(dim_word=100,  # word vector dimensionality
           task='en-fr',
 
           fine_tune_patience=8,
-          nccl = False,
+          nccl=False,
           src_vocab_map_file = None,
           tgt_vocab_map_file = None,
 
           trg_attention_layer_id=None,
-          fix_dp_bug = False,
+          fix_dp_bug=False,
+          io_buffer_size=40,
           ):
     model_options = locals().copy()
 
@@ -217,19 +218,19 @@ Start Time = {}
         text_iterator = TextIterator(
             dataset_src, dataset_tgt,
             vocab_filenames[0], vocab_filenames[1],
-            batch_size,n_words_src, n_words,maxlen
+            batch_size,n_words_src, n_words, maxlen, k=io_buffer_size,
         )
 
     valid_iterator = TextIterator(
         valid_datasets[0], valid_datasets[1],
         vocab_filenames[0], vocab_filenames[1],
-        valid_batch_size, n_words_src, n_words,
+        valid_batch_size, n_words_src, n_words, k=io_buffer_size,
     )
 
     small_train_iterator = TextIterator(
         small_train_datasets[0], small_train_datasets[1],
         vocab_filenames[0], vocab_filenames[1],
-        valid_batch_size, n_words_src, n_words,
+        valid_batch_size, n_words_src, n_words, k=io_buffer_size,
     )
 
     print 'Building model'
@@ -297,9 +298,9 @@ Start Time = {}
 
     clip_shared = theano.shared(np.array(clip_c, dtype=fX), name='clip_shared')
 
-    if dist_type != 'mpi_reduce': #build grads clip into computational graph
+    if dist_type != 'mpi_reduce':  # build grads clip into computational graph
         grads, g2 = clip_grad_remove_nan(grads, clip_shared, model.P)
-    else: #do the grads clip after gradients aggregation
+    else:  # do the grads clip after gradients aggregation
         g2 = None
 
     # compile the optimizer, the actual computational graph is compiled here
@@ -321,7 +322,7 @@ Start Time = {}
     if dist_type == 'mv':
         mv.barrier()
     elif dist_type == 'mpi_reduce':
-        #create receive buffers for mpi allreduce
+        # create receive buffers for mpi allreduce
         rec_grads = [np.zeros_like(p.get_value()) for p in model.P.itervalues()]
 
     estop = False
@@ -369,14 +370,14 @@ Start Time = {}
         if shuffle_data:
             text_iterator = load_shuffle_text_iterator(
                 eidx, worker_id, text_iterator_list,
-                datasets, vocab_filenames, batch_size, maxlen, n_words_src, n_words,
+                datasets, vocab_filenames, batch_size, maxlen, n_words_src, n_words, buffer_size=io_buffer_size
             )
         n_samples = 0
         if dist_type == 'mpi_reduce':
             mpi_communicator.Barrier()
 
         for i, (x, y) in enumerate(text_iterator):
-            if eidx == start_epoch and i < pass_batches: #ignore the first several batches when reload
+            if eidx == start_epoch and i < pass_batches:  # ignore the first several batches when reload
                 continue
             n_samples += len(x)
             uidx += 1
@@ -429,7 +430,7 @@ Start Time = {}
                 clip_shared.set_value(np.float32(clip_shared.get_value() * 0.9))
                 message('Discount clip value to {} at iteration {}'.format(clip_shared.get_value(), uidx))
 
-                #reload the best saved model
+                # reload the best saved model
                 if not os.path.exists(saveto):
                     message('No saved model at {}. Task exited'.format(saveto))
                     return 1., 1., 1.
