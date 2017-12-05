@@ -157,7 +157,7 @@ Datasets = {
         'small_train.article.txt', 'small_train.title.txt',
         'valid.article.filter.txt', 'valid.title.filter.txt', 'valid.title.filter.txt',
         'test.article.txt', 'test.title.txt',
-        'train.articl,e.dict.pkl', 'train.title.dict.pkl',
+        'train.article.dict.pkl', 'train.title.dict.pkl',
     ],
 
     'zh-en': [
