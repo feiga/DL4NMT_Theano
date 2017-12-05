@@ -614,6 +614,7 @@ def get_adadelta_imm_data(optimizer, given_imm, preload):
     if given_imm:
         # [NOTE] preload filename format: filename.iter10000.npz
         _real_filename = os.path.splitext(os.path.splitext(preload)[0])[0]
+	print(_real_filename)
         given_imm_filename = ImmediateFilename.format(_real_filename)
 
         # For back compatibility
